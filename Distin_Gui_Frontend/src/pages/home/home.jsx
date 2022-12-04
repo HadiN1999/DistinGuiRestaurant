@@ -1,22 +1,42 @@
 import * as React from 'react';
 import { Container, Card, Grid, Typography, Box } from '@mui/material';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { ScrollMenu, VisibilityContext } from 'react-horizontal-scrolling-menu';
 import './home.css'
 import CardScroll from '../../components/card';
-const images = [{
-    url:'https://graceandabes.com/wp-content/uploads/2019/06/Pizza-Home-Hero.jpg'
-},{
-    url:'https://media.istockphoto.com/id/1081422898/photo/pan-fried-duck.jpg?b=1&s=170667a&w=0&k=20&c=RRljEgn_wsgIq_9bHcX1pJi6E842KKxr82xzftiDe8I='
-},{
-    url:'https://cdn.boatinternational.com/bi_prd/bi/library_images/1uWaIIyTamwJb91nKEih_fine-dining-ss.jpg'
-}]
+import { getCategories } from '../../core/categories';
+import { useEffect } from 'react';
+import Animations from '../../components/skeleton';
 
 const Home =({setUser})=>{
 
 
+    const [categories, setCategories] = useState([])
+    const [pageRef , setPageRef] = useState([])
+    const [loading, setLoading] = useState(false)
+
+    useEffect(()=>{
+      setLoading(true)
+      getCategories().then((res)=>{
+            console.log(res)
+            if(res.success) {
+              let ref = []
+              res.Categories.map((cat)=>{
+                const re = React.createRef();
+                ref.push(re)
+              })
+              setPageRef(ref)
+              setCategories(res.Categories)
+              setLoading(false)
+            }
+        }).catch(e=> setLoading(false))
+    },[])
+
+    const scrollToRef = ref => ref.current.scrollIntoView({ behavior: "smooth" });
+    const scrollToPane = num => scrollToRef(pageRef[num]);
+
       return (
-      <Container sx={{marginTop:10}}>
+      <Container sx={{marginTop:10, marginBottom:10}}>
         <Box sx={{position:'relative'}} >
         <img
         width={'100%'}
@@ -43,19 +63,71 @@ const Home =({setUser})=>{
             component="div"
             sx={{ display: { xs: 'none', sm: 'block', color:'#a61d24' } }}
           >
-           Categories
+           Menu
             </Typography>
         </Box>
 
-    <ScrollMenu>
-        <CardScroll/>
-        <CardScroll/>
-        <CardScroll/>
-        <CardScroll/>
-        <CardScroll/>
-        <CardScroll/>
+        {
+          loading && <Animations/>
+        }
 
+    <ScrollMenu>
+    {
+          categories.map((cat,index)=>{
+            return <Box onClick={() => {scrollToPane(index)}} key={index} style={{cursor:'pointer',width:300, heigth:300,boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px', padding:5, margin:20}}>
+               <img src={cat.image} style={{ maxWidth: '90%', maxHeight: '90%', marginLeft: 'auto', marginRight: 'auto' }} />
+              <Typography>
+                {cat.name}
+              </Typography>
+            </Box>
+          })
+        }
     </ScrollMenu>
+
+        {
+          categories.map((cat,index)=>{
+            return <Box ref={pageRef[index]} key={index}>
+            <Box sx={{marginTop:5, alignItems:'flex-start', display:'flex'}}>
+            <Typography
+            variant="h4"
+            noWrap
+            component="div"
+            sx={{ display: { xs: 'none', sm: 'block', color:'#a61d24' } }}
+          >
+            {cat.name}
+            </Typography>
+            </Box>
+            {
+                !cat.items.length && <Box style={{display:'flex', justifyContent:'center'}}>
+                  <Typography>
+                  No Items For this Category
+                </Typography>
+                  </Box>
+              }
+            <Grid container spacing={2} sx={{marginTop:5}}>
+           
+{
+              cat.items.map((item, index1)=>{
+                return <Grid key={index1} item lg={3}>
+                  <Box style={{boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px', padding:5}}>
+               <img src={item.image} style={{ maxWidth: '90%', maxHeight: '90%', marginLeft: 'auto', marginRight: 'auto' }} />
+              <Typography>
+                {item.name}
+              </Typography>
+              <Typography>
+                {item.description}
+              </Typography>
+              <Typography>
+                {item.price}$
+              </Typography>
+            </Box>
+                  </Grid>
+              })
+            }
+            </Grid>
+            </Box>
+          })
+        }
 
     </Container>  
   );

@@ -27,9 +27,11 @@ exports.login = catchAsyncErrors(async (req, res, next) => {
 // Create Category
 exports.createCategory = catchAsyncErrors(async (req, res, next) => {
 
+        let categoryNmbr = await Category.find()
+        let position = categoryNmbr.length+1
+        req.body.position = position
         let category = await Category.create(req.body)
-
-        if(category) return res.status(200).json({ success: true, category })
+        if(category) return res.status(200).json({ success: true, category,message:'Category created' })
         else return res.status(200).json({ success: false, message:'Category was not created' })
 });
 
@@ -109,7 +111,9 @@ exports.reorderItem = catchAsyncErrors(async (req, res, next) => {
 // get Categories
 exports.getCategories = catchAsyncErrors(async (req, res, next) => {
         // return user
-        let Categories = await Category.find()
+        console.log('Categories')
+        let Categories = await Category.find().populate('items')
+        console.log(Categories)
         return res.status(200).json({ success: true, Categories })
 });
 

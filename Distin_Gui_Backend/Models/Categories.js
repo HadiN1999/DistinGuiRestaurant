@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { number } = require('yup');
 
 const categorySchema = new mongoose.Schema({
     name: {
@@ -7,6 +8,9 @@ const categorySchema = new mongoose.Schema({
     image:{
         type: String,
     }  ,
+    position:{
+        type:Number
+    },
     items:[{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Items'

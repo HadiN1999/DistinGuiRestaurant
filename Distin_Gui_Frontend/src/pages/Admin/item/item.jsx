@@ -3,12 +3,26 @@ import { Container, Card, Grid, Typography, Box, Modal, TextField, Button } from
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { createItem, deleteItem, getCategories, getItems, updateItem } from '../../../core/categories';
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import CardScroll from '../../../components/card';
 import ImageInput from '../../../components/inputImage';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import Snack from '../../../components/snackbar';
 const Item =({category,setIsCategories})=>{
 
     const [categories, setCategories] = useState([])
+    const [loading, setLoading] = useState(false)
+    const [snackbarOption, setSnackbarOption] = useState({
+        open:false,
+        severity:'warning',
+        message:'test'
+    })
+
+    const close=()=>{
+        setSnackbarOption({...snackbarOption,
+        open:false,
+    })
+    }
 
     useEffect(()=>{
        getItem()
@@ -41,7 +55,7 @@ const Item =({category,setIsCategories})=>{
     })
 
     const handleSubmit =(event)=>{
-
+        setLoading(true)
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     let paylaod = {
@@ -61,6 +75,8 @@ const Item =({category,setIsCategories})=>{
             getItem()
             setModal({...modal, open:false})
             setCategoryImage('')
+            setSnackbarOption({...snackbarOption, open:true, message: res.message, severity:'success'})
+        setLoading(false)
         }
     })
     else {
@@ -69,6 +85,8 @@ const Item =({category,setIsCategories})=>{
         {
             getItem()
             setModal({...modal, open:false})
+            setSnackbarOption({...snackbarOption, open:true, message: res.message, severity:'success'})
+        setLoading(false)
         }
     })
     }
@@ -76,9 +94,25 @@ const Item =({category,setIsCategories})=>{
 
     const deletCat =(itemId)=>{
         deleteItem(category._id, itemId).then(res=>{
-            if(res.success) getItem()
+            if(res.success) {
+                getItem()
+                setSnackbarOption({...snackbarOption, open:true, message: res.message, severity:'success'})
+            }
         })
     }
+
+    const handleOnDragEnd =(result)=> {
+    if (!result.destination) return;
+
+    const items = Array.from(categories);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setCategories(items);
+  }
+
+
+  const [drag, setDrag]= useState(false)
 
       return (
       <Container sx={{marginTop:10}}>
@@ -125,6 +159,7 @@ const Item =({category,setIsCategories})=>{
             <Button
               type="submit"
               fullWidth
+              disabled={loading}
               variant="contained"
               sx={{ mt: 3, mb: 2, backgroundColor:'#a61d24',"&.MuiButtonBase-root:hover": {
                 bgcolor: "#a61d24"
@@ -172,11 +207,12 @@ const Item =({category,setIsCategories})=>{
                         setModal({...modal, open:true, view:'add', id:''})
                         setCategoryImage('')
                         }}>
-                    <CardScroll isCategory={false}/>
+                    <CardScroll isItem isCategory={false}/>
                     </Box>
                 </Grid>
             </Grid>
         }
+        <Snack close={close} open={snackbarOption.open} severity={snackbarOption.severity} message={snackbarOption.message} />
 
         </Container>  
   );
