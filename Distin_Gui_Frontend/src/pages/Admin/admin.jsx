@@ -10,9 +10,13 @@ import Item from './item/item';
 const Admin =({setUser})=>{
 
     const [iscategories, setIsCategories] = useState(false)
+    const [category, setCategory]=useState({
+      name:'',
+      id:''
+    })
 
     const changeView =()=>{
-        return !iscategories?  <Category/> : <Item/>
+        return !iscategories?  <Category setIsCategories={setIsCategories} setCategory={setCategory}/> : <Item setIsCategories={setIsCategories} category={category}/>
     }
 
       return (

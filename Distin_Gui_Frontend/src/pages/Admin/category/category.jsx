@@ -2,13 +2,11 @@ import * as React from 'react';
 import { Container, Card, Grid, Typography, Box, Modal, TextField, Button } from '@mui/material';
 import { useState } from 'react';
 import { useEffect } from 'react';
-import { createCategories, getCategories } from '../../../core/categories';
+import { createCategories, getCategories, deleteCategory, updateCategory } from '../../../core/categories';
 import CardScroll from '../../../components/card';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
-import DeleteIcon from '@mui/icons-material/DeleteOutlined';
-import { useRef } from 'react';
 import './category.css'
-const Category =({setUser})=>{
+import ImageInput from '../../../components/inputImage';
+const Category =({setCategory,setIsCategories})=>{
 
     const style = {
         position: 'absolute',
@@ -20,21 +18,24 @@ const Category =({setUser})=>{
         boxShadow: 24,
         p: 5,
     };
-    const inputFile = useRef(null)
     const [categoryImage, setCategoryImage] = useState('')
-    const [isDragging, setIsDraging] = useState(false)
-    const [imageToUpload, setImageToUpload] = useState('')
+    const [name, setName] = useState('')
     const [categories, setCategories] = useState([])
     const [modal, setModal] = useState({
         open:false,
-        view:'add'
+        view:'add',
+        id:''
     })
 
-    useEffect(()=>{
+    const getCategory=()=>{
         getCategories().then((res)=>{
             console.log(res)
             if(res.success) setCategories(res.Categories)
         })
+    }
+
+    useEffect(()=>{
+        getCategory()
     },[])
 
     const handleSubmit =(event)=>{
@@ -47,91 +48,35 @@ const Category =({setUser})=>{
         items:[]
     }
 
-    createCategories(paylaod).then((res)=>{
+    if(modal.view === 'add')createCategories(paylaod).then((res)=>{
         if(res.success)
         {
-            getCategories().then((res)=>{
-            if(res.success) setCategories(res.Categories)
-            })
+            getCategory()
+            setModal({...modal, open:false})
+            setCategoryImage('')
+        }
+    })
+    else {
+        console.log('modall===>', modal)
+        paylaod ={...paylaod, items:categories.filter(i=>i._id === modal.id)[0].items}
+        updateCategory(modal.id,paylaod).then((res)=>{
+        if(res.success)
+        {
+            getCategory()
             setModal({...modal, open:false})
         }
     })
-
+    }
 }
 
-
-const handleDrags = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        setIsDraging(true)
+    const deletCat =(id)=>{
+        console.log('id===>', id)
+        deleteCategory(id).then((res)=>{
+            if(res.success) getCategory()
+        })
     }
 
-    const handleDragEnter = (e) => {
-        handleDrags(e);
-    }
 
-    const handleDragOver = (e) => {
-        handleDrags(e);
-    }
-
-    const handleDragLeave = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        setIsDraging(false)
-    }
-
-    const uploadCSV = (e) => {
-        const file = e.target.files[0];
-        setImageToUpload(e.target.files[0])
-
-        console.log(file)
-
-        var reader = new FileReader();
-
-        reader.onloadend = (e) => {
-
-            if (['jpg', 'png', 'svg'].includes(file.name.split('.')[file.name.split('.').length - 1].toLowerCase())) {
-                let imageUrl = e.target.result;
-                setCategoryImage(imageUrl)
-            } 
-        }
-        reader.readAsDataURL(file);
-    }
-
-    const handleDrop = (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-
-        const data = e.dataTransfer;
-        const files = data.files;
-        console.log("Oops...you dropped this: ", files);
-
-        [].forEach.call(files, handleFiles);
-
-        setIsDraging(false)
-    }
-    const handleFiles = (file) => {
-
-        // this could be refactored to not use the file reader
-        setImageToUpload(file)
-
-        var reader = new FileReader();
-
-        reader.onloadend = (e) => {
-
-            if (['jpg', 'png', 'svg'].includes(file.name.split('.')[file.name.split('.').length - 1].toLowerCase())) {
-                let imageUrl = e.target.result;
-                setCategoryImage(imageUrl)
-            } 
-
-        }
-
-        reader.readAsDataURL(file);
-    }
-
-    console.log(categories)
 
       return (
       <Container sx={{marginTop:10}}>
@@ -145,6 +90,7 @@ const handleDrags = (e) => {
                     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
             <TextField
               margin="normal"
+              defaultValue={modal.view==='edit'?name:''}
               required
               fullWidth
               id="name"
@@ -152,37 +98,7 @@ const handleDrags = (e) => {
               name="name"
               autoFocus
             />
-            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                {categoryImage === '' && <div className={isDragging ? 'dragDrop dragging greyBorder' : 'dragDrop'}
-                                        onDrop={handleDrop}
-                                        onClick={() => inputFile.current.click()}
-                                        onDragOver={handleDragOver}
-                                        onDragEnter={handleDragEnter}
-                                        onDragLeave={handleDragLeave} >
-                    <div className="inside">
-                        <div>
-                            <FileUploadIcon sx={{ fontSize: '5vh', color: '#a61d24' }} className="icon" />
-                        </div>
-                        <Typography variant={'h6'} style={{ color: '#a61d24', fontStyle: 'italic' }} >
-                            Drag Category image here or click
-                        </Typography>
-                    </div>
-                    <input id='myInputFileId' type='file' onChange={(e) => uploadCSV(e)} ref={inputFile} style={{ display: 'none' }} />
-                </div>}
-                {
-                    categoryImage !== '' && <Box className='documentUploaded' sx={{
-                        width: '40% !important',
-                        maxHeight: 300
-                    }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }} >
-                            <DeleteIcon onClick={() => {
-                                setCategoryImage('')
-                            }} sx={{ cursor: 'pointer', color: '#a61d24', fontSize: '3vh' }} />
-                        </Box>
-                        <img src={categoryImage} style={{ maxWidth: '90%', maxHeight: '90%', marginLeft: 'auto', marginRight: 'auto' }} />
-                    </Box>
-                }
-            </Box>
+            <ImageInput categoryImage={categoryImage} setCategoryImage={setCategoryImage} />
             <Button
               type="submit"
               fullWidth
@@ -191,7 +107,7 @@ const handleDrags = (e) => {
                 bgcolor: "#a61d24"
               } }}
             >
-              Create Category
+             {modal.view==='add'?'Create Category':'Update Category'} 
             </Button>
           </Box>
                 </Box>
@@ -217,16 +133,19 @@ const handleDrags = (e) => {
                     categories.map((cat,index)=>{
                         return(
                             <Grid key={index} item lg={3}>
-                                <CardScroll isCategory={true} item={cat}/>
+                                <CardScroll setIsCategories={setIsCategories} setCategory={setCategory} setCategoryImage={setCategoryImage} setName={setName} modal={modal} setModal={setModal}  deleteCategory={deletCat} isCategory={true} item={cat}/>
                             </Grid>
                         )
                     })
                 }
                 <Grid item lg={3}>
+                    <Box onClick={()=>{
+                        setModal({...modal, open:true, view:'add', id:''})
+                        setCategoryImage('')
+                        }}>
                     <CardScroll isCategory={false}/>
+                    </Box>
                 </Grid>
-                <Box onClick={()=>setModal({...modal, open:true})}>
-            </Box>
             </Grid>
         }
 
