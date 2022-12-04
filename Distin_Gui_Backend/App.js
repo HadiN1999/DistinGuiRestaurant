@@ -24,10 +24,10 @@ app.use(express.urlencoded({limit: '50mb', extended: true, parameterLimit: 50000
 
 // //import all routes
 
-// const email = require('./Routes/User/emailAuthRoute');
+const category = require('./Routes/Categegory');
 
 /////////////User////////////////////
-// app.use('/api/v1', email)
+app.use('/api/v1', category)
 
 
 

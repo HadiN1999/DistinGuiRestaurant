@@ -1,0 +1,30 @@
+.Banner {
+  border-radius: 20px;
+  width:400;
+  height: 400;
+}
+.Banner .Media {
+  background-color: white;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  transition: 300ms;
+  object-fit: fill ;
+}
+.Banner .Media:hover {
+  filter: brightness(115%);
+}
+.Banner .BannerGrid {
+  height: 100%;
+  position: relative;
+}
+.Banner .Content {
+  color: white;
+  background-color: red;
+  height: 100%;
+  position: relative;
+  cursor: pointer;
+  padding: 30px;
+  transition: 300ms;
+}

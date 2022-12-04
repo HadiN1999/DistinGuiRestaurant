@@ -4,19 +4,12 @@ const categorySchema = new mongoose.Schema({
     name: {
         type: String,
       },
-    items:[{
-        name: {
+    image:{
         type: String,
-      },
-      description:{
-        type:String
-      },
-      price:{
-        type:Number
-      },
-      image:{
-        type:String
-      }
+    }  ,
+    items:[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Items'
     }]  
 },
 {timestamps:true}
