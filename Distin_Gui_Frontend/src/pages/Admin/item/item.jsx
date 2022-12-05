@@ -8,10 +8,12 @@ import CardScroll from '../../../components/card';
 import ImageInput from '../../../components/inputImage';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Snack from '../../../components/snackbar';
+import Animations from '../../../components/skeleton';
 const Item =({category,setIsCategories})=>{
 
     const [categories, setCategories] = useState([])
     const [loading, setLoading] = useState(false)
+    const [loadingSkel, setLoadingSkel] = useState(false)
     const [snackbarOption, setSnackbarOption] = useState({
         open:false,
         severity:'warning',
@@ -29,8 +31,10 @@ const Item =({category,setIsCategories})=>{
     },[category])
 
     const getItem =()=>{
+        setLoadingSkel(true)
         getItems(category._id).then((res)=>{
             if(res.success) setCategories(res.items)
+            setLoadingSkel(false)
         })
     }
 
@@ -183,6 +187,11 @@ const Item =({category,setIsCategories})=>{
            {category.name} Items
          </Typography>
             </Box>    
+
+
+         {
+            loadingSkel && <Animations/>
+         }   
         
 
          {
@@ -192,7 +201,7 @@ const Item =({category,setIsCategories})=>{
          }
 
         {
-            categories.length>0 && <Grid container spacing={2} sx={{marginTop:5}}>
+            categories.length>0 && !loadingSkel && <Grid container spacing={2} sx={{marginTop:5}}>
                 {
                     categories.map((cat,index)=>{
                         return(

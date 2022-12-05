@@ -38,10 +38,12 @@ const ImageInput = ({categoryImage, setCategoryImage}) => {
 
         var reader = new FileReader();
 
-        reader.onloadend = (e) => {
+        reader.onloadend = async(e) => {
 
             if (['jpg', 'png', 'svg'].includes(file.name.split('.')[file.name.split('.').length - 1].toLowerCase())) {
                 let imageUrl = e.target.result;
+                imageUrl = await (await fetch(imageUrl).then(r=>r.blob()))
+                imageUrl = URL.createObjectURL(imageUrl)
                 setCategoryImage(imageUrl)
             } 
         }
@@ -60,16 +62,19 @@ const ImageInput = ({categoryImage, setCategoryImage}) => {
 
         setIsDraging(false)
     }
-    const handleFiles = (file) => {
+    const handleFiles =  (file) => {
 
         // this could be refactored to not use the file reader
 
         var reader = new FileReader();
 
-        reader.onloadend = (e) => {
+        reader.onloadend = async (e) => {
 
             if (['jpg', 'png', 'svg'].includes(file.name.split('.')[file.name.split('.').length - 1].toLowerCase())) {
                 let imageUrl = e.target.result;
+                imageUrl = await (await fetch(imageUrl).then(r=>r.blob()))
+                imageUrl = URL.createObjectURL(imageUrl)
+                setCategoryImage(imageUrl)
                 setCategoryImage(imageUrl)
             } 
 

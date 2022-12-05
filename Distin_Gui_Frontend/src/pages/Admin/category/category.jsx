@@ -8,6 +8,7 @@ import CardScroll from '../../../components/card';
 import './category.css'
 import ImageInput from '../../../components/inputImage';
 import Snack from '../../../components/snackbar';
+import Animations from '../../../components/skeleton';
 const Category =({setCategory,setIsCategories})=>{
 
     const style = {
@@ -34,6 +35,7 @@ const Category =({setCategory,setIsCategories})=>{
     })
     }
     const [categoryImage, setCategoryImage] = useState('')
+    const [loadingSkel, setLoadingSkel] = useState(false)
     const [name, setName] = useState('')
     const [categories, setCategories] = useState([])
     const [modal, setModal] = useState({
@@ -43,9 +45,10 @@ const Category =({setCategory,setIsCategories})=>{
     })
 
     const getCategory=()=>{
+        setLoadingSkel(true)
         getCategories().then((res)=>{
-            console.log(res)
             if(res.success) setCategories(res.Categories)
+            setLoadingSkel(false)
         })
     }
 
@@ -156,7 +159,7 @@ const Category =({setCategory,setIsCategories})=>{
           >
            Admin Categories
          </Typography>
-         <Typography
+         {/* <Typography
             variant="h5"
             noWrap
             component="div"
@@ -164,9 +167,12 @@ const Category =({setCategory,setIsCategories})=>{
             sx={{ cursor:'pointer', display: { xs: 'none', sm: 'block', color:'#a61d24' } }}
           >
            {drag?'Save order':'Allow Reordering'}
-         </Typography>
+         </Typography> */}
         </Box>    
-        
+            
+            {
+          loadingSkel && <Animations/>
+        }
 
          {
             categories.length ===0 && <Box onClick={()=>setModal({...modal, open:true})} sx={{cursor:'pointer',marginTop:10, display:'flex', justifyContent:'center'}}>
@@ -175,7 +181,7 @@ const Category =({setCategory,setIsCategories})=>{
          }
 
          {
-            categories.length>0 && !drag && 
+            categories.length>0 && !loadingSkel && !drag && 
                         <Grid 
                         container spacing={2} sx={{marginTop:5}}>
                         {
